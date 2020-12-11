@@ -237,18 +237,53 @@ def inputTransaksi():
         return jsonify(hasil)
 
 
-def cek_id(a):
+@app.route('/transaksi/cek', methods=['POST'])
+def cek_transaksi():
+    json_data = flask.request.json
+    if json_data == None:
+        hasil = {"pesan": "failed"}
+        return jsonify(hasil)
+    else:
+        id = json_data['idn']
+        cek = cek_id_nasabah(id)
+        if cek == 0:
+            hasil = {"pesan": "Null"}
+            return jsonify(hasil)
+        else:
+            total = sum_tabungan_transaksi(id)
+
+            hasil = {"pesan": str(total)}
+            return jsonify(hasil)
+
+
+def cek_id_nasabah(a):
     con = mysql.connector.connect(host="localhost",
                                   user="adit",
                                   password="aditPa$$word2781",
                                   db="e-sampah")
     cursor = con.cursor()
-    cursor.execute("SELECT idn FROM user where idn=%s", (a, ))
+    cursor.execute("SELECT id_nasabah FROM transaksi where id_nasabah=%s",
+                   (a, ))
     a = cursor.fetchone()
     if a == None:
         return 0
     else:
         return 1
+
+
+def sum_tabungan_transaksi(a):
+    con = mysql.connector.connect(host="localhost",
+                                  user="adit",
+                                  password="aditPa$$word2781",
+                                  db="e-sampah")
+    cursor = con.cursor()
+    cursor.execute("SELECT SUM(tabungan) FROM transaksi where id_nasabah=%s",
+                   (a, ))
+    b = cursor.fetchone()
+    if b == None:
+        return 0
+    else:
+        return b[0]
 
 
 if __name__ == "__main__":
